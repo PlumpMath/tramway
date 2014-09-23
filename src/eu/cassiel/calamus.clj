@@ -113,4 +113,6 @@
 
       (stop [this]
         (stop')
-        this))))
+        this)
+
+      (auto-queue [this] auto-Q))))

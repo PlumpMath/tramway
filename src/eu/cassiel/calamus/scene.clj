@@ -76,32 +76,9 @@
   [{:keys [background camera nodes]}]
   (when background (apply q/background background))
 
+  ;;(println camera)
   (when-let [{:keys [position look-at up]} camera]
-    (apply q/camera (flatten [position look-at up])))
+    (when (and position look-at up)
+      (apply q/camera (flatten [position look-at up]))))
 
-  (render-nodes nodes)
-
-  #_ (if-let [graphics (:graphics junk)]
-    (do
-      (q/with-graphics graphics
-        (do (q/color-mode :rgb 1.0)
-            (q/background 0 0 0 0)
-            (q/hint :disable-depth-test)
-            (q/rect-mode :center)
-            (q/text-align :center :center)
-            (q/ellipse-mode :radius)
-            (render-nodes nodes junk)
-            (when-let [blur (:blur junk)]
-              (.set blur "blurSize" (int 11))
-              (.set blur "sigma" (float 7.0))
-              (q/filter-shader blur))))
-      (q/image graphics 0 0))
-    (render-nodes nodes junk)
-    )
-
-  #_
-  (when-let [blur (:blur junk)]
-    (.set blur "blurSize" (int 9))
-    (.set blur "sigma" (float 5.0))
-    (q/filter-shader blur))
-  )
+  (render-nodes nodes))
