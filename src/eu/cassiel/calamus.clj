@@ -1,7 +1,6 @@
 (ns eu.cassiel.calamus
   (:require (eu.cassiel.calamus [scene :as scene]
                                 [queue :as queue]
-                                [osc :as osc]
                                 [forms :as f])
             (eu.cassiel [twizzle :as tw])
             (eu.cassiel.twizzle [interpolators :as twi])
@@ -15,10 +14,16 @@
   (stop [this] "Stop the application.")
   (auto-queue [this] "Returns a reference to the automation queue."))
 
+(defn jump-interp
+  "An interpolator for Twizzle which jumps to its final value at the end (and returns
+   its initial value before that)."
+  [val-1 _ _]
+  val-1
+  )
+
 (defn create-app [forms]
   (let [auto-Q (queue/queue)
         sketch (atom nil)
-        listener (osc/listener 5001)
 
         windowed-config {:size [800 600]}
         macbook-config {:size :fullscreen :features [:present] :display 0}
@@ -80,8 +85,7 @@
                                                    {:form form
                                                     :state (f/update form
                                                                      state
-                                                                     automation''
-                                                                     (osc/examine listener))})))
+                                                                     automation'')})))
                          (assoc-in S [:scene :nodes]
                                    [[:layer (map (fn [{:keys [form state]}]
                                                    (f/nodes form state automation''))
