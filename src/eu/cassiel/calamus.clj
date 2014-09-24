@@ -29,7 +29,7 @@
         macbook-config {:size :fullscreen :features [:present] :display 0}
         mac-pro-config {:size :fullscreen :features [:present] :display 1}
 
-        config windowed-config
+        config macbook-config
 
         stop' (fn []
                 (swap! sketch #(do (when % (-> % (.frame) (.dispose)))

@@ -24,6 +24,9 @@
 (defn rect [& args]
   [:rect args])
 
+(defn tri-ptr [& args]
+  [:tri-ptr args])
+
 (defn disc [& args]
   [:disc args])
 
@@ -41,6 +44,19 @@
     (case op
       :rect (let [[cx cy w h] arg]
               (q/with-translation [cx cy 0] #_ (q/box w h 2) (q/rect 0 0 w h)))
+
+      ;; Triangle with base at (x1, y1), base width w, point at (x2, y2):
+      :tri-ptr (let [[x1 y1 x2 y2 w] arg
+                     w2 (* w 0.5)
+                     xd (- x2 x1)
+                     yd (- y2 y1)
+                     len (Math/sqrt (+ (* xd xd) (* yd yd)))]
+                 (q/with-translation [x1 y1 0]
+                   (q/with-rotation #_ [0]
+                     [(Math/atan2 (- y2 y1) (- x2 x1))]
+                     (q/triangle 0 (+ w2)
+                                 len 0
+                                 0 (- w2)))))
 
       :disc (let [[cx cy r] arg]
               (q/ellipse cx cy r r))
