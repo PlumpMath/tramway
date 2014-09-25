@@ -94,8 +94,9 @@
                          (assoc-in S [:scene :background] bg)
                          (assoc-in S [:scene :camera] camera))))
 
-        draw (fn [{scene :scene}]
-               (scene/refresh scene))
+        draw (fn [{:keys [scene automation]}]
+               (let [save-pattern (tw/sample (:state automation) [:renderer :save-pattern])]
+                 (scene/refresh scene :save-pattern save-pattern)))
 
         start' (fn []
                  (stop')

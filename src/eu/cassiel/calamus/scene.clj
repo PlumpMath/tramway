@@ -89,7 +89,7 @@
 (defn refresh
   "Refresh a scene, which contains the drawing elements as well as background,
    camera position, etc."
-  [{:keys [background camera nodes]}]
+  [{:keys [background camera nodes]} & {:keys [save-pattern]}]
   (when background (apply q/background background))
 
   ;;(println camera)
@@ -97,4 +97,6 @@
     (when (and position look-at up)
       (apply q/camera (flatten [position look-at up]))))
 
-  (render-nodes nodes))
+  (render-nodes nodes)
+
+  (when save-pattern (q/save-frame save-pattern)))
