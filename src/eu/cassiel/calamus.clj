@@ -21,15 +21,18 @@
   val-1
   )
 
-(defn create-app [forms]
+(defn create-app [forms & {:keys [frame-rate realtime]
+                           :or {frame-rate 30 realtime nil}}]
   (let [auto-Q (queue/queue)
         sketch (atom nil)
+
+        frame-interval (/ 1 frame-rate)
 
         windowed-config {:size [800 600]}
         macbook-config {:size :fullscreen :features [:present] :display 0}
         mac-pro-config {:size :fullscreen :features [:present] :display 1}
 
-        config macbook-config
+        config mac-pro-config
 
         stop' (fn []
                 (swap! sketch #(do (when % (-> % (.frame) (.dispose)))
@@ -66,7 +69,7 @@
                 (q/rect-mode :center)
                 (q/text-align :center :center)
                 (q/ellipse-mode :radius)
-                (q/frame-rate 30)
+                (q/frame-rate frame-rate)
                 initial-state)
 
         update (fn [state]
@@ -74,7 +77,10 @@
                                  (queue/take q))
                        automation' ((or auto-fn identity)
                                     (get-in state [:automation :state]))
-                       automation'' (tw/locate automation' (/ (q/millis) 1000))
+                       t (if realtime
+                           (/ (q/millis) 1000)
+                           (* (q/frame-count) frame-interval))
+                       automation'' (tw/locate automation' t)
                        bg (tw/sample automation'' [:scene :bg])
                        camera {:position (tw/sample automation'' [:camera :position])
                                :look-at (tw/sample automation'' [:camera :look-at])
