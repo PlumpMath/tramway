@@ -10,7 +10,7 @@
 
 (defprotocol APP
   "Rather gratuitous protocol for the main application."
-  (start [this] "Start the application.")
+  (start [this init] "Start the application.")
   (stop [this] "Stop the application.")
   (auto-queue [this] "Returns a reference to the automation queue."))
 
@@ -63,13 +63,14 @@
                                 :interp all-interps)
                         :queue auto-Q}})
 
-        setup (fn []
+        setup (fn [init]
                 (q/color-mode :rgb 1.0)
                 (q/hint :disable-depth-test)
                 (q/rect-mode :center)
                 (q/text-align :center :center)
                 (q/ellipse-mode :radius)
                 (q/frame-rate frame-rate)
+                (when init (init))
                 initial-state)
 
         update (fn [state]
@@ -104,7 +105,7 @@
                (let [save-pattern (tw/sample (:state automation) [:renderer :save-pattern])]
                  (scene/refresh scene :save-pattern save-pattern)))
 
-        start' (fn []
+        start' (fn [init]
                  (stop')
                  (reset! sketch
                          (q/sketch ;; :features [:no-safe-fns]
@@ -112,14 +113,14 @@
                           :features (:features config)
                           :display (:display config)
                           :renderer :p3d
-                          :setup setup
+                          :setup #(setup init)
                           :update update
                           :draw draw
                           :middleware [qm/pause-on-error qm/fun-mode])))]
 
     (reify APP
-      (start [this]
-        (start')
+      (start [this init]
+        (start' init)
         this)
 
       (stop [this]
