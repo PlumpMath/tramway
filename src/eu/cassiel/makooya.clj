@@ -10,9 +10,14 @@
 
 (defprotocol APP
   "Rather gratuitous protocol for the main application."
-  (start [this init] "Start the application.")
+  (start0 [this options] "Start the application.")
   (stop [this] "Stop the application.")
   (auto-queue [this] "Returns a reference to the automation queue."))
+
+(defn start
+  "Start with var-args options."
+  [app & options]
+  (start0 app (apply hash-map options)))
 
 (defn jump-interp
   "An interpolator for Twizzle which jumps to its final value at the end (and returns
@@ -27,12 +32,6 @@
         sketch (atom nil)
 
         frame-interval (/ 1 frame-rate)
-
-        windowed-config {:size [800 600]}
-        macbook-config {:size :fullscreen :features [:present] :display 0}
-        mac-pro-config {:size :fullscreen :features [:present] :display 1}
-
-        config mac-pro-config
 
         stop' (fn []
                 (swap! sketch #(do (when % (-> % (.frame) (.dispose)))
@@ -105,22 +104,30 @@
                (let [save-pattern (tw/sample (:state automation) [:renderer :save-pattern])]
                  (scene/refresh scene :save-pattern save-pattern)))
 
-        start' (fn [init]
+        start' (fn [{:keys [init size display]}]
                  (stop')
                  (reset! sketch
-                         (q/sketch ;; :features [:no-safe-fns]
-                          :size (:size config)
-                          :features (:features config)
-                          :display (:display config)
-                          :renderer :p3d
-                          :setup #(setup init)
-                          :update update
-                          :draw draw
-                          :middleware [qm/pause-on-error qm/fun-mode])))]
+                         (let [config (cond display
+                                            {:size :fullscreen :features [:present] :display display}
+
+                                            size
+                                            {:size size}
+
+                                            :else
+                                            {:size [500 500]})]
+                           (q/sketch ;; :features [:no-safe-fns]
+                            :size (:size config)
+                            :features (:features config)
+                            :display (:display config)
+                            :renderer :p3d
+                            :setup #(setup init)
+                            :update update
+                            :draw draw
+                            :middleware [qm/pause-on-error qm/fun-mode]))))]
 
     (reify APP
-      (start [this init]
-        (start' init)
+      (start0 [this options]
+        (start' options)
         this)
 
       (stop [this]
