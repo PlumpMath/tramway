@@ -3,6 +3,12 @@
 
 * =makooya=
 
+** Changelog
+
+- =0.2.0-SNAPSHOT=, =2014-10-04= :: Breaking change: =auto-gate= takes =:in= param instead of =:at=.
+
+- =0.1.0-SNAPSHOT=, =2014-09-21= :: Initial check-in (from previous =calamus= project, Berlin CCL).
+
 ** License
 
 Copyright © 2014 Nick Rothwell.
