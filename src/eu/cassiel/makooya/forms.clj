@@ -11,9 +11,10 @@
   (automation-interps [self]
     "Return a map of interpolation functions for Twizzle automation.")
 
-  (update [self struct-state auto-state]
-    "Update this state with automation state (partly vestigial - but lets us
-     persist state beyond each `nodes` call).")
+  (update [self form-state auto-state]
+    "Update this state with automation state (partly vestigial - but
+     lets us persist state beyond each `nodes` call). Can also alter
+     automation state, so returns `{:form-state ..., :auto-state ...}`.")
 
-  (nodes [self struct-state auto-state]
+  (nodes [self form-state auto-state]
     "Generate the drawing nodes for the form, given an automation state."))

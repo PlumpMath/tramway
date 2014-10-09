@@ -21,10 +21,23 @@
 
 (defn jump-interp
   "An interpolator for Twizzle which jumps to its final value at the end (and returns
-   its initial value before that)."
+   its initial value before that). TODO: this should be part of Twizzle itself."
   [val-1 _ _]
   val-1
   )
+
+(defn update-forms
+  "The master state has a `:forms` entry which is a sequence of `{:form, :state}`.
+   Return pair: sequence of updated form states, and a composite automation state."
+  [auto-state form-seq]
+  (reduce (fn [[form-states auto-state] entry]
+            (let [f (:form entry)
+                  x (f/update f (:state entry) auto-state)]
+              [(conj form-states {:form f :state (:form-state x)})
+               (:auto-state x)]))
+          [nil auto-state]
+          form-seq
+          ))
 
 (defn create-app [forms & {:keys [frame-rate realtime]
                            :or {frame-rate 30 realtime nil}}]
@@ -81,22 +94,20 @@
                            (/ (q/millis) 1000)
                            (* (q/frame-count) frame-interval))
                        automation'' (tw/locate automation' t)
-                       bg (tw/sample automation'' [:scene :bg])
-                       camera {:position (tw/sample automation'' [:camera :position])
-                               :look-at (tw/sample automation'' [:camera :look-at])
-                               :up (tw/sample automation'' [:camera :up])}]
+
+                       [form-states automation'''] (update-forms automation'' (:forms state))
+
+                       bg (tw/sample automation''' [:scene :bg])
+                       camera {:position (tw/sample automation''' [:camera :position])
+                               :look-at (tw/sample automation''' [:camera :look-at])
+                               :up (tw/sample automation''' [:camera :up])}]
                    (as-> state S
-                         (update-in S [:forms]
-                                    (partial map (fn [{:keys [form state]}]
-                                                   {:form form
-                                                    :state (f/update form
-                                                                     state
-                                                                     automation'')})))
+                         (assoc-in S [:forms] form-states)
                          (assoc-in S [:scene :nodes]
                                    [[:layer (map (fn [{:keys [form state]}]
-                                                   (f/nodes form state automation''))
+                                                   (f/nodes form state automation'''))
                                                  (:forms S))]])
-                         (assoc-in S [:automation :state] automation'')
+                         (assoc-in S [:automation :state] automation''')
                          (assoc-in S [:scene :background] bg)
                          (assoc-in S [:scene :camera] camera))))
 

@@ -4,6 +4,7 @@
 * =makooya=
 
 ** Changelog
+- =0.3.0-SNAPSHOT=, =2014-10-09= :: Breaking change: form =update= is expected to return a map with =:form-state= and =:auto-state= (so that the =update= call can also modify the global automation state). Automation state changes cascade through the forms. Camera position and background colour are applied after all forms have been evaluated.
 
 - =0.2.0-SNAPSHOT=, =2014-10-04= :: Breaking change: =auto-gate= takes =:in= param instead of =:at=.
 
