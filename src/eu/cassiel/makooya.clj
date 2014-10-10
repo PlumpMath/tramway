@@ -29,10 +29,10 @@
 (defn update-forms
   "The master state has a `:forms` entry which is a sequence of `{:form, :state}`.
    Return pair: sequence of updated form states, and a composite automation state."
-  [auto-state form-seq]
+  [time auto-state form-seq]
   (reduce (fn [[form-states auto-state] entry]
             (let [f (:form entry)
-                  x (f/update f (:state entry) auto-state)]
+                  x (f/update f time (:state entry) auto-state)]
               [(conj form-states {:form f :state (:form-state x)})
                (:auto-state x)]))
           [nil auto-state]
@@ -65,7 +65,7 @@
               all-interps (reduce merge global-interps (map f/automation-interps forms))
               ;; Pair forms with their states.
               forms (map (fn [s] {:form s
-                                 :state (f/init-struct-state s)})
+                                 :state (f/init-form-state s)})
                          forms)]
           ;; :scene gets created by automation, so the renderer is nil-protected (perhaps
           ;; the first drawing happens before any update?)
@@ -95,7 +95,7 @@
                            (* (q/frame-count) frame-interval))
                        automation'' (tw/locate automation' t)
 
-                       [form-states automation'''] (update-forms automation'' (:forms state))
+                       [form-states automation'''] (update-forms t automation'' (:forms state))
 
                        bg (tw/sample automation''' [:scene :bg])
                        camera {:position (tw/sample automation''' [:camera :position])
