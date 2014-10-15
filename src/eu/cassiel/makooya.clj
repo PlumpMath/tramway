@@ -36,8 +36,23 @@
               [(conj form-states {:form f :state (:form-state x)})
                (:auto-state x)]))
           [nil auto-state]
-          form-seq
-          ))
+          form-seq))
+
+(defn mouse-tracking [S]
+  ;; Nasty hack: get past the `:layer`.
+  (let [node-layers (get-in S [:scene :nodes 0 1])]
+    (when (q/mouse-pressed?)
+      (doseq [layer node-layers
+              n layer]
+        ;; (println n)
+        (scene/mouse n
+                     (- (q/mouse-x) (/ (q/width) 2))
+                     (- (q/mouse-y) (/ (q/height) 2)))))
+    S))
+
+(doseq [x [[1 2] [3 4]]
+        y x]
+  (println y))
 
 (defn create-app [forms & {:keys [frame-rate realtime]
                            :or {frame-rate 30 realtime nil}}]
@@ -109,7 +124,8 @@
                                                  (:forms S))]])
                          (assoc-in S [:automation :state] automation''')
                          (assoc-in S [:scene :background] bg)
-                         (assoc-in S [:scene :camera] camera))))
+                         (assoc-in S [:scene :camera] camera)
+                         (mouse-tracking S))))
 
         draw (fn [{:keys [scene automation]}]
                (let [save-pattern (tw/sample (:state automation) [:renderer :save-pattern])]

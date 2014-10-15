@@ -3,6 +3,8 @@
 
 * =makooya=
 ** Changelog
+- =0.6.0-SNAPSHOT=, =2014-10-15= :: Start of conversion to prototypes for nodes. Initial mouse tracking.
+
 - =0.5.0-SNAPSHOT=, =2014-10-15= :: Breaking change: =start= takes optional renderer as argument, default is =:java2d= (as in Quil) rather than =:p3d=.
 
 - =0.4.0-SNAPSHOT=, =2014-10-10= :: Breaking changes: =update= now takes a =time= argument (first); form initialisation routine is now called =init-form-state= (not =init-struct-state=).
