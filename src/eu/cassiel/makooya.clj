@@ -115,7 +115,8 @@
                (let [save-pattern (tw/sample (:state automation) [:renderer :save-pattern])]
                  (scene/refresh scene :save-pattern save-pattern)))
 
-        start' (fn [{:keys [init size display]}]
+        start' (fn [{:keys [init size display renderer]
+                    :or {renderer :java2d}}]
                  (stop')
                  (reset! sketch
                          (let [config (cond display
@@ -130,7 +131,7 @@
                             :size (:size config)
                             :features (:features config)
                             :display (:display config)
-                            :renderer :p3d
+                            :renderer renderer
                             :setup #(setup init)
                             :update update
                             :draw draw
