@@ -39,16 +39,23 @@
           form-seq))
 
 (defn mouse-tracking [S]
-  ;; Nasty hack: get past the `:layer`.
-  (let [node-layers (get-in S [:scene :nodes 0 1])]
-    (when (q/mouse-pressed?)
+  ;; Nasty hack: get past the `:layer` we're still planting in the main loop.
+  (let [node-layers (get-in S [:scene :nodes 0 1])
+        prev-mouse-down (get-in S [:tracking :mouse-down?])
+        pressed (q/mouse-pressed?)
+        m-down (and (not prev-mouse-down) pressed)
+        m-up (and prev-mouse-down (not pressed))]
+
+    (when pressed
       (doseq [layer node-layers
               n layer]
         ;; (println n)
         (scene/mouse n
+                     m-down
                      (- (q/mouse-x) (/ (q/width) 2))
                      (- (q/mouse-y) (/ (q/height) 2)))))
-    S))
+
+    (assoc-in S [:tracking :mouse-down?] pressed)))
 
 (doseq [x [[1 2] [3 4]]
         y x]
@@ -88,7 +95,8 @@
            :automation {:state (tw/initial
                                 :init all-inits
                                 :interp all-interps)
-                        :queue auto-Q}})
+                        :queue auto-Q}
+           :tracking {:mouse-down? false}})
 
         setup (fn [init]
                 (q/color-mode :rgb 1.0)

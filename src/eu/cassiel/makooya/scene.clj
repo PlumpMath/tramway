@@ -5,7 +5,7 @@
 
 (defprotocol NODE
   (draw [this] "Draw (direct Quil calls).")
-  (mouse [this x y] "Mouse position while mouse-down."))
+  (mouse [this click? x y] "Mouse position while mouse-down. `click?`=`true` when first down."))
 
 (defn fill [colour & args]
   [:fill colour args])
@@ -32,9 +32,9 @@
     (draw [this]
       (q/with-translation xyz (render-nodes args)))
 
-    (mouse [this x y]
+    (mouse [this click? x y]
       (let [[dx dy] xyz]
-        (doseq [n args] (mouse n (- x dx) (- y dy)))))))
+        (doseq [n args] (mouse n click? (- x dx) (- y dy)))))))
 
 (defn rect [& args]
   [:rect args])
@@ -47,13 +47,13 @@
       (q/with-translation [cx cy z]
         (q/rect 0 0 w h)))
 
-    (mouse [this x y]
+    (mouse [this click? x y]
       (when mouse-fn
         (let [x0 (- x cx)
               y0 (- y cy)]
           (if (and (< (Math/abs x0) (/ w 2))
                    (< (Math/abs y0) (/ h 2)))
-            (mouse-fn x0 y0)))))))
+            (mouse-fn :click? click? :x x0 :y y0)))))))
 
 
 (defn tri-ptr [& args]
