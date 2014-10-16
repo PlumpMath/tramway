@@ -133,7 +133,7 @@
                          (assoc-in S [:automation :state] automation''')
                          (assoc-in S [:scene :background] bg)
                          (assoc-in S [:scene :camera] camera)
-                         (mouse-tracking S))))
+                         #_ (mouse-tracking S))))
 
         draw (fn [{:keys [scene automation]}]
                (let [save-pattern (tw/sample (:state automation) [:renderer :save-pattern])]
