@@ -47,13 +47,21 @@
   [:with-rotation angle args])
 
 (defn with-rotation [angle & args]
-  (reify NODE
-    (draw [this]
-      (q/with-rotation
-        [(* angle q/TWO-PI)]
-        (doseq [n args] (draw n))))
+  (let [rads (* angle q/TWO-PI)
+        sin (Math/sin rads)
+        cos (Math/cos rads)]
 
-    (mouse [this click? x y])))
+    (reify NODE
+      (draw [this]
+        (q/with-rotation
+          [rads]
+          (doseq [n args] (draw n))))
+
+      (mouse [this click? x y]
+        (doseq [n args]
+          (mouse n click?
+                 (+ (* x cos) (* y sin))
+                 (- (* y cos) (* x sin))))))))
 
 (defn ^:deprecated OLD_with-translation [xyz & args]
   [:with-translation xyz args])
