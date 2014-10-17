@@ -7,27 +7,60 @@
   (draw [this] "Draw (direct Quil calls).")
   (mouse [this click? x y] "Mouse position while mouse-down. `click?`=`true` when first down."))
 
-(defn fill [colour & args]
+(defn ^:deprecated OLD_fill [colour & args]
   [:fill colour args])
 
-(defn no-fill [& args]
-  [:fill nil args])
+(defn fill [colour & args]
+  (reify NODE
+    (draw [this]
+      (let [curr-fill (q/current-fill)]
+        (if colour (apply q/fill colour) (q/no-fill))
+        (doseq [n args] (draw n))
+        (q/fill curr-fill)))
 
-(defn stroke [colour & args]
+    (mouse [this click? x y]
+      (doseq [n args] (mouse n click? x y))
+      )))
+
+(defn no-fill [& args]
+  (apply fill nil args))
+
+(defn ^:deprecated OLD_stroke [colour & args]
   [:stroke colour args])
 
-(defn no-stroke [& args]
-  [:stroke nil args])
+(defn stroke [colour & args]
+  (reify NODE
+    (draw [this]
+      (let [curr-stroke (q/current-stroke)]
+        (if colour (apply q/stroke colour) (q/no-stroke))
+        (doseq [n args] (draw n))
+        (q/stroke curr-stroke)))
 
-(defn with-rotation [angle & args]
+    (mouse [this click? x y]
+      (doseq [n args] (mouse n click? x y))
+      )))
+
+(defn no-stroke [& args]
+  (apply stroke nil args))
+
+(defn ^:deprecated OLD_with-rotation [angle & args]
   [:with-rotation angle args])
 
-(defn with-translation [xyz & args]
+(defn with-rotation [angle & args]
+  (reify NODE
+    (draw [this]
+      (q/with-rotation
+        [(* angle q/TWO-PI)]
+        (doseq [n args] (draw n))))
+
+    (mouse [this click? x y])))
+
+(defn ^:deprecated OLD_with-translation [xyz & args]
   [:with-translation xyz args])
 
 (declare render-nodes)
 
-(defn f_with-translation [xyz & args]
+(defn with-translation [xyz & args]
   (reify NODE
     (draw [this]
       (q/with-translation xyz (render-nodes args)))
@@ -36,10 +69,10 @@
       (let [[dx dy] xyz]
         (doseq [n args] (mouse n click? (- x dx) (- y dy)))))))
 
-(defn rect [& args]
+(defn ^:deprecated OLD_rect [& args]
   [:rect args])
 
-(defn f_rect
+(defn rect
   "New form: NODE instance."
   [cx cy z w h & {:keys [mouse-fn]}]
   (reify NODE
@@ -59,16 +92,34 @@
 (defn tri-ptr [& args]
   [:tri-ptr args])
 
-(defn disc [& args]
+(defn ^:deprecated OLD_disc [& args]
   [:disc args])
+
+(defn disc [cx cy z r]
+  (reify NODE
+    (draw [this]
+      (q/with-translation [cx cy z]
+        (q/ellipse 0 0 r r)))
+
+    (mouse [this click? x y]))
+  )
 
 (defn text [& args]
   [:text args])
 
-(defn layer [& args]
+(defn ^:deprecated OLD_layer [& args]
   [:layer args])
 
-(defn render-nodes
+(defn layer [& layers]
+  (reify NODE
+    (draw [this]
+      (doseq [a layers
+              n a]
+        (draw n)))
+
+    (mouse [this click? x y])))
+
+(defn ^:deprecated render-nodes
   "Render the nodes, perhaps recursing for a 'scope' like `fill`, `stroke`,
    `translate`."
   [nodes]
