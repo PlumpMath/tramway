@@ -125,7 +125,10 @@
               n a]
         (draw n)))
 
-    (mouse [this click? x y])))
+    (mouse [this click? x y]
+      (doseq [a layers
+              n a]
+        (mouse n click? x y)))))
 
 (defn ^:deprecated render-nodes
   "Render the nodes, perhaps recursing for a 'scope' like `fill`, `stroke`,
