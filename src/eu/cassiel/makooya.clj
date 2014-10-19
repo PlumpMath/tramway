@@ -40,17 +40,17 @@
 
 (defn mouse-tracking [S]
   ;; Nasty hack: get past the `:layer` we're still planting in the main loop.
-  (let [node-layers (get-in S [:scene :nodes 0 1])
+  (let [node-top-layer (get-in S [:scene :nodes 0])
         prev-mouse-down (get-in S [:tracking :mouse-down?])
         pressed (q/mouse-pressed?)
         m-down (and (not prev-mouse-down) pressed)
         m-up (and prev-mouse-down (not pressed))]
 
     (when pressed
-      (doseq [layer node-layers
-              n layer]
+      (doseq [#_ layer #_ node-layers
+              #_ n #_ layer]
         ;; (println n)
-        (scene/mouse n
+        (scene/mouse node-top-layer
                      m-down
                      (- (q/mouse-x) (/ (q/width) 2))
                      (- (q/mouse-y) (/ (q/height) 2)))))
@@ -127,9 +127,12 @@
                    (as-> state S
                          (assoc-in S [:forms] form-states)
                          (assoc-in S [:scene :nodes]
-                                   [[:layer (map (fn [{:keys [form state]}]
+                                   [#_ [:layer (map (fn [{:keys [form state]}]
                                                    (f/nodes form state automation'''))
-                                                 (:forms S))]])
+                                                    (:forms S))]
+                                    (apply scene/layer (map (fn [{:keys [form state]}]
+                                                              (f/nodes form state automation'''))
+                                                            (:forms S)))])
                          (assoc-in S [:automation :state] automation''')
                          (assoc-in S [:scene :background] bg)
                          (assoc-in S [:scene :camera] camera)
