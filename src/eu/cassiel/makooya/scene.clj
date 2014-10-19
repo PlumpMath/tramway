@@ -53,14 +53,17 @@
 (defn ^:deprecated OLD_with-rotation [angle & args]
   [:with-rotation angle args])
 
-(defn with-rotation [angle & args]
-  (let [rads (* angle q/TWO-PI)
+(defn with-rotation [angle-xyz & args]
+  (let [[angle x y z] (if (sequential? angle-xyz)
+                        angle-xyz
+                        [angle-xyz 0 0 1])
+        rads (* angle q/TWO-PI)
         sin (Math/sin rads)
         cos (Math/cos rads)]
     (reify NODE
       (draw [this]
         (q/with-rotation
-          [rads]
+          [rads x y z]
           (doseq [n args] (draw n))))
 
       (mouse [this click? x y]
