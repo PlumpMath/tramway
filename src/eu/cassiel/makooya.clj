@@ -39,7 +39,7 @@
           form-seq))
 
 (defn mouse-tracking [S]
-  ;; Nasty hack: get past the `:layer` we're still planting in the main loop.
+  ;; Slightly nasty hack: get past the `:layer` we're still planting in the main loop.
   (let [node-top-layer (get-in S [:scene :nodes 0])
         prev-mouse-down (get-in S [:tracking :mouse-down?])
         pressed (q/mouse-pressed?)
