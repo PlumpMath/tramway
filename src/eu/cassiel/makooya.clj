@@ -47,19 +47,13 @@
         m-up (and prev-mouse-down (not pressed))]
 
     (when pressed
-      (doseq [#_ layer #_ node-layers
-              #_ n #_ layer]
-        ;; (println n)
-        (scene/mouse node-top-layer
-                     m-down
-                     (- (q/mouse-x) (/ (q/width) 2))
-                     (- (q/mouse-y) (/ (q/height) 2)))))
+      ;; (println n)
+      (scene/mouse node-top-layer
+                   m-down
+                   (- (q/mouse-x) (/ (q/width) 2))
+                   (- (q/mouse-y) (/ (q/height) 2))))
 
     (assoc-in S [:tracking :mouse-down?] pressed)))
-
-(doseq [x [[1 2] [3 4]]
-        y x]
-  (println y))
 
 (defn create-app [forms & {:keys [frame-rate realtime]
                            :or {frame-rate 30 realtime nil}}]

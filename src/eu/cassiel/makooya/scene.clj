@@ -7,6 +7,15 @@
   (draw [this] "Draw (direct Quil calls).")
   (mouse [this click? x y] "Mouse position while mouse-down. `click?`=`true` when first down."))
 
+(defn first-mouse-fn
+  "Attempt mouse function call on sequence of nodes, exit when one returns truthy (has handled
+   click). Note: goes from first to last. TODO: should go last to first, to reflect rendering
+   behaviour?"
+  [nodes click? x y]
+  (reduce (fn [state n] (or state (mouse n click? x y)))
+          false
+          nodes))
+
 (defn ^:deprecated OLD_fill [colour & args]
   [:fill colour args])
 
@@ -19,8 +28,7 @@
         (q/fill curr-fill)))
 
     (mouse [this click? x y]
-      (doseq [n args] (mouse n click? x y))
-      )))
+      (first-mouse-fn args click? x y))))
 
 (defn no-fill [& args]
   (apply fill nil args))
@@ -37,8 +45,7 @@
         (q/stroke curr-stroke)))
 
     (mouse [this click? x y]
-      (doseq [n args] (mouse n click? x y))
-      )))
+      (first-mouse-fn args click? x y))))
 
 (defn no-stroke [& args]
   (apply stroke nil args))
@@ -50,7 +57,6 @@
   (let [rads (* angle q/TWO-PI)
         sin (Math/sin rads)
         cos (Math/cos rads)]
-
     (reify NODE
       (draw [this]
         (q/with-rotation
@@ -58,10 +64,9 @@
           (doseq [n args] (draw n))))
 
       (mouse [this click? x y]
-        (doseq [n args]
-          (mouse n click?
-                 (+ (* x cos) (* y sin))
-                 (- (* y cos) (* x sin))))))))
+        (first-mouse-fn args click?
+                        (+ (* x cos) (* y sin))
+                        (- (* y cos) (* x sin)))))))
 
 (defn ^:deprecated OLD_with-translation [xyz & args]
   [:with-translation xyz args])
@@ -75,7 +80,7 @@
 
     (mouse [this click? x y]
       (let [[dx dy] xyz]
-        (doseq [n args] (mouse n click? (- x dx) (- y dy)))))))
+        (first-mouse-fn args click? (- x dx) (- y dy))))))
 
 (defn ^:deprecated OLD_rect [& args]
   [:rect args])
@@ -92,10 +97,9 @@
       (when mouse-fn
         (let [x0 (- x cx)
               y0 (- y cy)]
-          (if (and (< (Math/abs x0) (/ w 2))
-                   (< (Math/abs y0) (/ h 2)))
+          (when (and (< (Math/abs x0) (/ w 2))
+                     (< (Math/abs y0) (/ h 2)))
             (mouse-fn :click? click? :x x0 :y y0)))))))
-
 
 (defn tri-ptr [& args]
   [:tri-ptr args])
@@ -109,7 +113,8 @@
       (q/with-translation [cx cy z]
         (q/ellipse 0 0 r r)))
 
-    (mouse [this click? x y]))
+    (mouse [this click? x y]) ;; TODO
+    )
   )
 
 (defn text [& args]
@@ -126,7 +131,12 @@
         (draw n)))
 
     (mouse [this click? x y]
-      (doseq [a layers
+      ;; Here we *do* reverse the layers, to reflect front-to-back rendering.
+      (reduce (fn [state ns] (or state (first-mouse-fn ns click? x y)))
+              false
+              (reverse layers))
+
+      #_ (doseq [a layers
               n a]
         (mouse n click? x y)))))
 
