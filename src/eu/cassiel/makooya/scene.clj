@@ -9,12 +9,11 @@
 
 (defn first-mouse-fn
   "Attempt mouse function call on sequence of nodes, exit when one returns truthy (has handled
-   click). Note: goes from first to last. TODO: should go last to first, to reflect rendering
-   behaviour?"
+   click). Note the `reverse` to take clicks from front to back."
   [nodes click? x y]
   (reduce (fn [state n] (or state (mouse n click? x y)))
           false
-          nodes))
+          (reverse nodes)))
 
 (defn ^:deprecated OLD_fill [colour & args]
   [:fill colour args])
@@ -134,14 +133,10 @@
         (draw n)))
 
     (mouse [this click? x y]
-      ;; Here we *do* reverse the layers, to reflect front-to-back rendering.
+      ;; Here we *do* reverse the layers, to reflect back-to-front rendering.
       (reduce (fn [state ns] (or state (first-mouse-fn ns click? x y)))
               false
-              (reverse layers))
-
-      #_ (doseq [a layers
-              n a]
-        (mouse n click? x y)))))
+              (reverse layers)))))
 
 (defn ^:deprecated render-nodes
   "Render the nodes, perhaps recursing for a 'scope' like `fill`, `stroke`,
