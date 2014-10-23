@@ -1,7 +1,7 @@
 (ns eu.cassiel.makooya.auto
-  (:require (eu.cassiel [makooya :as m])
-            (eu.cassiel.makooya [queue :as queue])
-            (eu.cassiel [twizzle :as tw])))
+  (:require (eu.cassiel [makooya :as m]
+                        [twizzle :as tw])
+            [clojure.core.async :as async]))
 
 (def empty identity)
 
@@ -30,5 +30,5 @@
           auto-fn)))
 
 (defn fire [auto-fn system]
-  (queue/put (m/auto-queue system) auto-fn)
+  (async/>!! (m/auto-queue system) auto-fn)
   empty)

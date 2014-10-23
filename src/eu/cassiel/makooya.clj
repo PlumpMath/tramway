@@ -1,12 +1,12 @@
 (ns eu.cassiel.makooya
   (:require (eu.cassiel.makooya [scene :as scene]
-                                [queue :as queue]
                                 [forms :as f])
             (eu.cassiel [twizzle :as tw])
             (eu.cassiel.twizzle [interpolators :as twi])
             (tween-clj [core :as tween])
             [quil.core :as q]
-            [quil.middleware :as qm]))
+            [quil.middleware :as qm]
+            (clojure.core [async :as async])))
 
 (defprotocol APP
   "Rather gratuitous protocol for the main application."
@@ -56,7 +56,7 @@
 
 (defn create-app [forms & {:keys [frame-rate realtime]
                            :or {frame-rate 30 realtime nil}}]
-  (let [auto-Q (queue/queue)
+  (let [auto-Q (async/chan 10)
         sketch (atom nil)
 
         frame-interval (/ 1 frame-rate)
@@ -103,9 +103,10 @@
 
         update (fn [state]
                  (let [auto-fn (let [q (get-in state [:automation :queue])]
-                                 (queue/take q))
-                       automation' ((or auto-fn identity)
-                                    (get-in state [:automation :state]))
+                                 (async/alt!! q
+                                              ([f] f)
+                                              :default identity))
+                       automation' (auto-fn (get-in state [:automation :state]))
                        t (if realtime
                            (/ (q/millis) 1000)
                            (* (q/frame-count) frame-interval))
