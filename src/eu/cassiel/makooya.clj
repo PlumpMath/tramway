@@ -33,9 +33,10 @@
   (reduce (fn [[form-states auto-state] entry]
             (let [f (:form entry)
                   x (f/update f time (:state entry) auto-state)]
+              ;; conj. DANGER WILL ROBINSON.
               [(conj form-states {:form f :state (:form-state x)})
                (:auto-state x)]))
-          [nil auto-state]
+          [[] auto-state]
           form-seq))
 
 (defn mouse-tracking [S]

@@ -15,9 +15,6 @@
           false
           (reverse nodes)))
 
-(defn ^:deprecated OLD_fill [colour & args]
-  [:fill colour args])
-
 (defn fill [colour & args]
   (reify NODE
     (draw [this]
@@ -32,9 +29,6 @@
 (defn no-fill [& args]
   (apply fill nil args))
 
-(defn ^:deprecated OLD_stroke [colour & args]
-  [:stroke colour args])
-
 (defn stroke [colour & args]
   (reify NODE
     (draw [this]
@@ -48,9 +42,6 @@
 
 (defn no-stroke [& args]
   (apply stroke nil args))
-
-(defn ^:deprecated OLD_with-rotation [angle & args]
-  [:with-rotation angle args])
 
 (defn with-rotation [angle-xyz & args]
   (let [[angle x y z] (if (sequential? angle-xyz)
@@ -70,9 +61,6 @@
                         (+ (* x cos) (* y sin))
                         (- (* y cos) (* x sin)))))))
 
-(defn ^:deprecated OLD_with-translation [xyz & args]
-  [:with-translation xyz args])
-
 (declare render-nodes)
 
 (defn with-translation [xyz & args]
@@ -83,9 +71,6 @@
     (mouse [this click? x y]
       (let [[dx dy] xyz]
         (first-mouse-fn args click? (- x dx) (- y dy))))))
-
-(defn ^:deprecated OLD_rect [& args]
-  [:rect args])
 
 (defn rect
   "New form: NODE instance."
@@ -106,9 +91,6 @@
 (defn tri-ptr [& args]
   [:tri-ptr args])
 
-(defn ^:deprecated OLD_disc [& args]
-  [:disc args])
-
 (defn disc [cx cy z r]
   (reify NODE
     (draw [this]
@@ -121,9 +103,6 @@
 
 (defn text [& args]
   [:text args])
-
-(defn ^:deprecated OLD_layer [& args]
-  [:layer args])
 
 (defn layer [& layers]
   (reify NODE
