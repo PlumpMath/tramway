@@ -7,8 +7,13 @@
   (draw [this] "Draw (direct Quil calls).")
   (mouse [this click? x y] "Mouse position while mouse-down. `click?`=`true` when first down."))
 
-(defn ^:deprecated OLD_fill [colour & args]
-  [:fill colour args])
+(defn first-mouse-fn
+  "Attempt mouse function call on sequence of nodes, exit when one returns truthy (has handled
+   click). Note the `reverse` to take clicks from front to back."
+  [nodes click? x y]
+  (reduce (fn [state n] (or state (mouse n click? x y)))
+          false
+          (reverse nodes)))
 
 (defn fill [colour & args]
   (reify NODE
@@ -19,14 +24,10 @@
         (q/fill curr-fill)))
 
     (mouse [this click? x y]
-      (doseq [n args] (mouse n click? x y))
-      )))
+      (first-mouse-fn args click? x y))))
 
 (defn no-fill [& args]
   (apply fill nil args))
-
-(defn ^:deprecated OLD_stroke [colour & args]
-  [:stroke colour args])
 
 (defn stroke [colour & args]
   (reify NODE
@@ -37,34 +38,28 @@
         (q/stroke curr-stroke)))
 
     (mouse [this click? x y]
-      (doseq [n args] (mouse n click? x y))
-      )))
+      (first-mouse-fn args click? x y))))
 
 (defn no-stroke [& args]
   (apply stroke nil args))
 
-(defn ^:deprecated OLD_with-rotation [angle & args]
-  [:with-rotation angle args])
-
-(defn with-rotation [angle & args]
-  (let [rads (* angle q/TWO-PI)
+(defn with-rotation [angle-xyz & args]
+  (let [[angle x y z] (if (sequential? angle-xyz)
+                        angle-xyz
+                        [angle-xyz 0 0 1])
+        rads (* angle q/TWO-PI)
         sin (Math/sin rads)
         cos (Math/cos rads)]
-
     (reify NODE
       (draw [this]
         (q/with-rotation
-          [rads]
+          [rads x y z]
           (doseq [n args] (draw n))))
 
       (mouse [this click? x y]
-        (doseq [n args]
-          (mouse n click?
-                 (+ (* x cos) (* y sin))
-                 (- (* y cos) (* x sin))))))))
-
-(defn ^:deprecated OLD_with-translation [xyz & args]
-  [:with-translation xyz args])
+        (first-mouse-fn args click?
+                        (+ (* x cos) (* y sin))
+                        (- (* y cos) (* x sin)))))))
 
 (declare render-nodes)
 
@@ -75,10 +70,7 @@
 
     (mouse [this click? x y]
       (let [[dx dy] xyz]
-        (doseq [n args] (mouse n click? (- x dx) (- y dy)))))))
-
-(defn ^:deprecated OLD_rect [& args]
-  [:rect args])
+        (first-mouse-fn args click? (- x dx) (- y dy))))))
 
 (defn rect
   "New form: NODE instance."
@@ -92,16 +84,12 @@
       (when mouse-fn
         (let [x0 (- x cx)
               y0 (- y cy)]
-          (if (and (< (Math/abs x0) (/ w 2))
-                   (< (Math/abs y0) (/ h 2)))
+          (when (and (< (Math/abs x0) (/ w 2))
+                     (< (Math/abs y0) (/ h 2)))
             (mouse-fn :click? click? :x x0 :y y0)))))))
-
 
 (defn tri-ptr [& args]
   [:tri-ptr args])
-
-(defn ^:deprecated OLD_disc [& args]
-  [:disc args])
 
 (defn disc [cx cy z r]
   (reify NODE
@@ -109,14 +97,12 @@
       (q/with-translation [cx cy z]
         (q/ellipse 0 0 r r)))
 
-    (mouse [this click? x y]))
+    (mouse [this click? x y]) ;; TODO
+    )
   )
 
 (defn text [& args]
   [:text args])
-
-(defn ^:deprecated OLD_layer [& args]
-  [:layer args])
 
 (defn layer [& layers]
   (reify NODE
@@ -126,9 +112,10 @@
         (draw n)))
 
     (mouse [this click? x y]
-      (doseq [a layers
-              n a]
-        (mouse n click? x y)))))
+      ;; Here we *do* reverse the layers, to reflect back-to-front rendering.
+      (reduce (fn [state ns] (or state (first-mouse-fn ns click? x y)))
+              false
+              (reverse layers)))))
 
 (defn ^:deprecated render-nodes
   "Render the nodes, perhaps recursing for a 'scope' like `fill`, `stroke`,

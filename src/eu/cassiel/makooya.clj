@@ -1,12 +1,12 @@
 (ns eu.cassiel.makooya
   (:require (eu.cassiel.makooya [scene :as scene]
-                                [queue :as queue]
                                 [forms :as f])
             (eu.cassiel [twizzle :as tw])
             (eu.cassiel.twizzle [interpolators :as twi])
             (tween-clj [core :as tween])
             [quil.core :as q]
-            [quil.middleware :as qm]))
+            [quil.middleware :as qm]
+            (clojure.core [async :as async])))
 
 (defprotocol APP
   "Rather gratuitous protocol for the main application."
@@ -33,13 +33,13 @@
   (reduce (fn [[form-states auto-state] entry]
             (let [f (:form entry)
                   x (f/update f time (:state entry) auto-state)]
+              ;; conj. DANGER WILL ROBINSON.
               [(conj form-states {:form f :state (:form-state x)})
                (:auto-state x)]))
-          [nil auto-state]
+          [[] auto-state]
           form-seq))
 
 (defn mouse-tracking [S]
-  ;; Slightly nasty hack: get past the `:layer` we're still planting in the main loop.
   (let [node-top-layer (get-in S [:scene :nodes 0])
         prev-mouse-down (get-in S [:tracking :mouse-down?])
         pressed (q/mouse-pressed?)
@@ -47,23 +47,17 @@
         m-up (and prev-mouse-down (not pressed))]
 
     (when pressed
-      (doseq [#_ layer #_ node-layers
-              #_ n #_ layer]
-        ;; (println n)
-        (scene/mouse node-top-layer
-                     m-down
-                     (- (q/mouse-x) (/ (q/width) 2))
-                     (- (q/mouse-y) (/ (q/height) 2)))))
+      ;; (println n)
+      (scene/mouse node-top-layer
+                   m-down
+                   (- (q/mouse-x) (/ (q/width) 2))
+                   (- (q/mouse-y) (/ (q/height) 2))))
 
     (assoc-in S [:tracking :mouse-down?] pressed)))
 
-(doseq [x [[1 2] [3 4]]
-        y x]
-  (println y))
-
 (defn create-app [forms & {:keys [frame-rate realtime]
                            :or {frame-rate 30 realtime nil}}]
-  (let [auto-Q (queue/queue)
+  (let [auto-Q (async/chan 10)
         sketch (atom nil)
 
         frame-interval (/ 1 frame-rate)
@@ -110,9 +104,10 @@
 
         update (fn [state]
                  (let [auto-fn (let [q (get-in state [:automation :queue])]
-                                 (queue/take q))
-                       automation' ((or auto-fn identity)
-                                    (get-in state [:automation :state]))
+                                 (async/alt!! q
+                                              ([f] f)
+                                              :default identity))
+                       automation' (auto-fn (get-in state [:automation :state]))
                        t (if realtime
                            (/ (q/millis) 1000)
                            (* (q/frame-count) frame-interval))
@@ -127,10 +122,7 @@
                    (as-> state S
                          (assoc-in S [:forms] form-states)
                          (assoc-in S [:scene :nodes]
-                                   [#_ [:layer (map (fn [{:keys [form state]}]
-                                                   (f/nodes form state automation'''))
-                                                    (:forms S))]
-                                    (apply scene/layer (map (fn [{:keys [form state]}]
+                                   [(apply scene/layer (map (fn [{:keys [form state]}]
                                                               (f/nodes form state automation'''))
                                                             (:forms S)))])
                          (assoc-in S [:automation :state] automation''')

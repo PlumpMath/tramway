@@ -7,4 +7,5 @@
                  [quil "2.2.2"]
                  [eu.cassiel/twizzle "0.5.0"]
                  [eu.cassiel/monome-fu "0.2.3"]
-                 [tween-clj "0.4.0"]])
+                 [tween-clj "0.4.0"]
+                 [org.clojure/core.async "0.1.346.0-17112a-alpha"]])
