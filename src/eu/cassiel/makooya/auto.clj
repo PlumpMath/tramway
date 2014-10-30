@@ -3,7 +3,7 @@
             (eu.cassiel.makooya [queue :as queue])
             (eu.cassiel [twizzle :as tw])))
 
-(def empty identity)
+(def void identity)
 
 (defn auto [auto-fn & {:keys [ch at in to]
                        :or {at 0 in 0}}]
@@ -31,4 +31,4 @@
 
 (defn fire [auto-fn system]
   (queue/put (m/auto-queue system) auto-fn)
-  empty)
+  void)
