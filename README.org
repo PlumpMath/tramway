@@ -3,6 +3,7 @@
 
 * =makooya=
 ** Changelog
+- =0.8.0-SNAPSHOT=, =2014-10-31= :: Breaking change: =click?= for mouse-down is now =click-type=, values =:down= and =:up=. Note: no tracking of clicked object (a la SHADO) yet.
 - =0.7.0-SNAPSHOT=, =2014-10-30= :: Breaking change: =auto/empty= -> =auto/void=.
 - =0.6.0-SNAPSHOT=, =2014-10-15= :: Breaking change: start of conversion to protocols for nodes. Initial mouse tracking. `rect` and `disc` now take a `=z=`, as well as optional mouse callback function(s).
 

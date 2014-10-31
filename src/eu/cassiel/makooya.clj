@@ -46,10 +46,10 @@
         m-down (and (not prev-mouse-down) pressed)
         m-up (and prev-mouse-down (not pressed))]
 
-    (when pressed
+    (when (or pressed m-up)
       ;; (println n)
       (scene/mouse node-top-layer
-                   m-down
+                   (cond m-down :down m-up :up :else nil)
                    (- (q/mouse-x) (/ (q/width) 2))
                    (- (q/mouse-y) (/ (q/height) 2))))
 
