@@ -1,5 +1,5 @@
-(ns eu.cassiel.makooya.auto
-  (:require (eu.cassiel [makooya :as m]
+(ns eu.cassiel.tramway.auto
+  (:require (eu.cassiel [tramway :as m]
                         [twizzle :as tw])
             [clojure.core.async :as async]))
 

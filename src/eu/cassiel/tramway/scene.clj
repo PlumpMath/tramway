@@ -1,4 +1,4 @@
-(ns eu.cassiel.makooya.scene
+(ns eu.cassiel.tramway.scene
   "Faux scene-graph drawing via quil"
   (:require [quil.core :as q]
             [quil.middleware :as m]))

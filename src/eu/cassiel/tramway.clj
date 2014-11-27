@@ -1,5 +1,5 @@
-(ns eu.cassiel.makooya
-  (:require (eu.cassiel.makooya [scene :as scene]
+(ns eu.cassiel.tramway
+  (:require (eu.cassiel.tramway [scene :as scene]
                                 [forms :as f])
             (eu.cassiel [twizzle :as tw])
             (eu.cassiel.twizzle [interpolators :as twi])

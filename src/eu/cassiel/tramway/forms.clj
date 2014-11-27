@@ -1,4 +1,4 @@
-(ns eu.cassiel.makooya.forms)
+(ns eu.cassiel.tramway.forms)
 
 (defprotocol FORM
   "Specification for a graphical form."

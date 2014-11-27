@@ -1,4 +1,4 @@
-(defproject eu.cassiel/makooya "0.8.0-SNAPSHOT"
+(defproject eu.cassiel/tramway "1.0.0"
   :description "FIXME: write description"
   :url "http://example.com/FIXME"
   :license {:name "Eclipse Public License"

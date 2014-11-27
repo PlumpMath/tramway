@@ -1,6 +1,6 @@
-(ns eu.cassiel.makooya-test
+(ns eu.cassiel.tramway-test
   (:require [clojure.test :refer :all]
-            [eu.cassiel.makooya :refer :all]))
+            [eu.cassiel.tramway :refer :all]))
 
 (deftest a-test
   (testing "FIXME, I fail."
